@@ -34,7 +34,12 @@ class RemindersList extends React.Component {
       },
       body: JSON.stringify(remObject)
     })
-      .then((response) => response.json())
+      .then((rem) => rem.json())
+      .then(reminder => {
+        this.setState({
+          reminders: this.state.reminders.concat(reminder), 
+        })
+      })
       .catch(e => this.setState({ error: true, loading: false }));
   }
 
