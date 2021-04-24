@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleSheet} from 'react-native';
+import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleSheet, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import styles from './Styles';
@@ -19,29 +19,41 @@ class RemindersList extends React.Component {
   }
 
   addReminder = (text) => {
-    if (!text) {
-      alert('Input some text');
-    }
+    //if (!text) {
+    //  alert('Input some text');
+    // }
+    const existAlert = () =>
+    Alert.alert(
+      "Error!",
+      "The same note already exist!",
+      [
+        
+        { text: "OK"}
+      ]
+    );
 
-    const remObject = {
-      name: text,
-      date: new Date().toLocaleString()
-    }
+    let filter = this.state.reminders.filter(reminder => reminder.name === text)
+    if (filter.length === 0) {
+      const remObject = {
+        name: text,
+        date: new Date().toLocaleString()
+      }
 
-    fetch('https://reminders-utu.herokuapp.com/api/reminders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(remObject)
-    })
-      .then((rem) => rem.json())
-      .then(reminder => {
-        this.setState({
-          reminders: this.state.reminders.concat(reminder), 
-        })
+      fetch('https://reminders-utu.herokuapp.com/api/reminders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(remObject)
       })
-      .catch(e => this.setState({ error: true, loading: false }));
+        .then((rem) => rem.json())
+        .then(reminder => {
+          this.setState({
+            reminders: this.state.reminders.concat(reminder),
+          })
+        })
+        .catch(e => this.setState({ error: true, loading: false }));
+    } else {existAlert()}
   }
 
   render() {
@@ -62,21 +74,21 @@ class RemindersList extends React.Component {
     }
 
     return (
-      <View style={styles. reminderview}  >
-      <ScrollView>
-        {this.state.reminders.map(reminder =>
-          <Reminder
-            key={reminder.id}
-            name={reminder.name}
-            id={reminder.id}
-            navigation={this.props.navigation}
-          />)}
-        </ScrollView>  
+      <View style={styles.reminderview}  >
+        <ScrollView>
+          {this.state.reminders.map(reminder =>
+            <Reminder
+              key={reminder.id}
+              name={reminder.name}
+              id={reminder.id}
+              navigation={this.props.navigation}
+            />)}
+        </ScrollView>
         <NewReminder addReminder={this.addReminder}></NewReminder>
-        </View>
+      </View>
       //</ScrollView>
     );
-  }
+  } 
 }
 
 const Reminder = (props) => {
