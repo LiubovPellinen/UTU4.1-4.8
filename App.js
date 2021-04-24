@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Text, View, Button, ActivityIndicator, TextInput, ScrollView } from 'react-native';
+import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleSheet} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import styles from './Styles';
 
 class RemindersList extends React.Component {
   state = {
@@ -61,6 +62,7 @@ class RemindersList extends React.Component {
     }
 
     return (
+      <View style={styles. reminderview}  >
       <ScrollView>
         {this.state.reminders.map(reminder =>
           <Reminder
@@ -69,8 +71,10 @@ class RemindersList extends React.Component {
             id={reminder.id}
             navigation={this.props.navigation}
           />)}
+        </ScrollView>  
         <NewReminder addReminder={this.addReminder}></NewReminder>
-      </ScrollView>
+        </View>
+      //</ScrollView>
     );
   }
 }
@@ -91,9 +95,9 @@ class NewReminder extends React.Component {
     }
   }
 
-  handleTextChange = (event) => {
+  handleTextChange = (text) => {
     this.setState({
-      text: event.target.value,
+      text
     })
   }
   render() {
@@ -102,7 +106,7 @@ class NewReminder extends React.Component {
         <TextInput
           name="reminderName"
           placeholder="Write the note here"
-          onChange={this.handleTextChange}
+          onChangeText={text => this.handleTextChange(text)}
           defaultValue={this.state.text}
         />
         <Button title="Add note" onPress={() => this.props.addReminder(this.state.text)} />
