@@ -3,6 +3,24 @@ import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleShee
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import styles from './Styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const setData = async (key, value) => {
+  try {
+    value = JSON.stringify(value)
+    console.log('AsyncStorage saving', key, value)
+    await AsyncStorage.setItem(key, value)
+  } catch (e) {
+    // saving error
+  }
+}
+
+const getData = async (key) => {
+  let value = await AsyncStorage.getItem(key)
+  value = JSON.parse(value)
+  console.log('AsyncStorage getting', key, value)
+  return value
+};
 
 class RemindersList extends React.Component {
   state = {
@@ -12,48 +30,23 @@ class RemindersList extends React.Component {
   }
 
   componentDidMount() {
-    fetch('https://reminders-utu.herokuapp.com/api/reminders')
-      .then(rem => rem.json())
-      .then(reminders => this.setState({ loading: false, reminders: reminders }))
-      .catch(e => this.setState({ error: true, loading: false }));
+    this.focusListener = this.props.navigation.addListener('focus',
+      () => { 
+        this.populateData()
+      }
+     );
+
+    this.populateData()
   }
 
-  addReminder = (text) => {
-    //if (!text) {
-    //  alert('Input some text');
-    // }
-    const existAlert = () =>
-    Alert.alert(
-      "Error!",
-      "The same note already exist!",
-      [
-        
-        { text: "OK"}
-      ]
-    );
-
-    let filter = this.state.reminders.filter(reminder => reminder.name === text)
-    if (filter.length === 0) {
-      const remObject = {
-        name: text,
-        date: new Date().toLocaleString()
-      }
-
-      fetch('https://reminders-utu.herokuapp.com/api/reminders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(remObject)
+  populateData() {
+    fetch('https://reminders-utu.herokuapp.com/api/reminders')
+      .then(rem => rem.json())
+      .then(reminders => {
+        this.setState({ loading: false, reminders: reminders })
+        setData('reminders', reminders)
       })
-        .then((rem) => rem.json())
-        .then(reminder => {
-          this.setState({
-            reminders: this.state.reminders.concat(reminder),
-          })
-        })
-        .catch(e => this.setState({ error: true, loading: false }));
-    } else {existAlert()}
+      .catch(e => this.setState({ error: true, loading: false }))
   }
 
   render() {
@@ -84,9 +77,8 @@ class RemindersList extends React.Component {
               navigation={this.props.navigation}
             />)}
         </ScrollView>
-        <NewReminder addReminder={this.addReminder}></NewReminder>
+        <Button title="Add" onPress={() => this.props.navigation.navigate('NewReminder')} />
       </View>
-      //</ScrollView>
     );
   } 
 }
@@ -127,6 +119,64 @@ class NewReminder extends React.Component {
   }
 }
 
+class NewReminderScreen extends React.Component {
+  addReminder = async (text) => {
+    if (text.length === 0) {
+      Alert.alert(
+        "Error!",
+        "Input text here",
+        [
+          
+          { text: "OK"}
+        ]
+      );
+
+      return;
+    };
+
+    let reminders = await getData('reminders')
+    let filter = reminders.filter(reminder => reminder.name === text)
+    if (filter.length > 0) {
+      Alert.alert(
+        "Error!",
+        "The same note already exist!",
+        [
+          
+          { text: "OK"}
+        ]
+      );
+
+      return;
+    }
+    
+    const remObject = {
+      name: text,
+      date: new Date().toLocaleString()
+    }
+
+    fetch('https://reminders-utu.herokuapp.com/api/reminders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(remObject)
+    })
+    .then((rem) => rem.json())
+    .then(reminder => {
+      reminders = reminders.concat(reminder);
+      setData('reminders', reminders);
+    })
+    .catch(e => this.setState({ error: true, loading: false }));
+  }
+
+  render() {
+    return (
+      <View>
+        <NewReminder addReminder={this.addReminder}></NewReminder>
+      </View>
+    );
+  }
+}
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -134,6 +184,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Reminders">
         <Stack.Screen name="Reminders" component={RemindersList} options={{ title: "Welcome to List" }} />
+        <Stack.Screen name="NewReminder" component={NewReminderScreen} options={{ title: "New reminder" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
