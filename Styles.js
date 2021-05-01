@@ -4,31 +4,38 @@ import { StyleSheet } from "react-native"
 const styles = StyleSheet.create({
     reminderview: {
         flexDirection: 'column',
-        //justifyContent: 'center',
+        justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'white',
         fontWeight: 'bold',
         fontSize: 30,
         padding: 10,
+        borderWidth: 2,
+        borderRadius:10,
+        lineHeight:60
+
     },
-    adminview: {
-        backgroundColor: 'red',
-        fontWeight: 'bold',
-        fontSize: 30,
-        padding: 10,
-    },
-    dayview: {
-        backgroundColor: 'green',
-        fontWeight: 'bold',
-        fontSize: 15,
-        padding: 10,
-    },
-    dayitemview: {
-        backgroundColor: 'yellow',
-        fontWeight: 'bold',
-        fontSize: 20,
-        padding: 10,
-    }
+    
+   button:{
+    backgroundColor: '#20B2AA', 
+    borderRadius:10, 
+    width:300, 
+    height:30 ,
+    
+  },
+   inputText:{
+    borderWidth:1,
+    margin: 10,
+    width:300,
+    height:30,
+    borderRadius:10
+   },
+   buttonText:{
+    fontSize: 15, 
+    color: '#fff',
+     textAlign: 'center', 
+     margin: 5, 
+   }
 
 });
 

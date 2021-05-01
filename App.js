@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleSheet, Alert } from 'react-native';
+import { Text, View, Button, ActivityIndicator, TextInput, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import styles from './Styles';
@@ -31,10 +31,10 @@ class RemindersList extends React.Component {
 
   componentDidMount() {
     this.focusListener = this.props.navigation.addListener('focus',
-      () => { 
+      () => {
         this.populateData()
       }
-     );
+    );
 
     this.populateData()
   }
@@ -70,17 +70,22 @@ class RemindersList extends React.Component {
       <View style={styles.reminderview}  >
         <ScrollView>
           {this.state.reminders.map(reminder =>
-            <Reminder
+            <Reminder style={styles.reminders}
               key={reminder.id}
               name={reminder.name}
               id={reminder.id}
               navigation={this.props.navigation}
             />)}
         </ScrollView>
-        <Button title="Add" onPress={() => this.props.navigation.navigate('NewReminder')} />
+                 <TouchableOpacity
+            onPress={() => this.props.navigation.navigate('NewReminder')} 
+            style={styles.button}>
+            <Text style={styles.buttonText}>Add</Text>
+          </TouchableOpacity>
+        
       </View>
     );
-  } 
+  }
 }
 
 const Reminder = (props) => {
@@ -106,14 +111,19 @@ class NewReminder extends React.Component {
   }
   render() {
     return (
-      <View >
-        <TextInput
+      <View style={styles.reminderview}  >
+        <TextInput style={styles.inputText}
           name="reminderName"
-          placeholder="Write the note here"
+          placeholder="  Write the reminder here"
           onChangeText={text => this.handleTextChange(text)}
           defaultValue={this.state.text}
         />
-        <Button title="Add note" onPress={() => this.props.addReminder(this.state.text)} />
+        <TouchableOpacity
+            onPress={() => this.props.addReminder(this.state.text)} 
+            style={styles.button}>
+            <Text style={styles.buttonText}>Add reminder</Text>
+          </TouchableOpacity>
+       
       </View>
     )
   }
@@ -123,11 +133,11 @@ class NewReminderScreen extends React.Component {
   addReminder = async (text) => {
     if (text.length === 0) {
       Alert.alert(
-        "Error!",
+        "Warning!",
         "Input text here",
         [
-          
-          { text: "OK"}
+
+          { text: "OK" }
         ]
       );
 
@@ -138,17 +148,17 @@ class NewReminderScreen extends React.Component {
     let filter = reminders.filter(reminder => reminder.name === text)
     if (filter.length > 0) {
       Alert.alert(
-        "Error!",
-        "The same note already exist!",
+        "Warning!",
+        "The same reminder already exist!",
         [
-          
-          { text: "OK"}
+
+          { text: "OK" }
         ]
       );
 
       return;
     }
-    
+
     const remObject = {
       name: text,
       date: new Date().toLocaleString()
@@ -161,12 +171,22 @@ class NewReminderScreen extends React.Component {
       },
       body: JSON.stringify(remObject)
     })
-    .then((rem) => rem.json())
-    .then(reminder => {
-      reminders = reminders.concat(reminder);
-      setData('reminders', reminders);
-    })
-    .catch(e => this.setState({ error: true, loading: false }));
+      .then((rem) => rem.json())
+      .then(reminder => {
+        reminders = reminders.concat(reminder);
+        setData('reminders', reminders);
+        Alert.alert(
+          "",
+          "The reminder was successfully added.",
+          [
+  
+            { text: "OK" }
+          ]
+        );
+  
+        return;
+      })
+      .catch(e => this.setState({ error: true, loading: false }));
   }
 
   render() {
@@ -183,7 +203,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Reminders">
-        <Stack.Screen name="Reminders" component={RemindersList} options={{ title: "Welcome to List" }} />
+        <Stack.Screen name="Reminders" component={RemindersList} options={{ title: "Reminder list" }} />
         <Stack.Screen name="NewReminder" component={NewReminderScreen} options={{ title: "New reminder" }} />
       </Stack.Navigator>
     </NavigationContainer>
